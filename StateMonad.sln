@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateMonad", "StateMonad.csproj", "{BF7872F5-47CA-4F76-8126-0C7B01DBC618}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "StateMonadFSharp", "StateMonadFSharp\StateMonadFSharp.fsproj", "{1B0449DC-B92F-4528-83AB-B7D3185C7826}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{BF7872F5-47CA-4F76-8126-0C7B01DBC618}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF7872F5-47CA-4F76-8126-0C7B01DBC618}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF7872F5-47CA-4F76-8126-0C7B01DBC618}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B0449DC-B92F-4528-83AB-B7D3185C7826}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B0449DC-B92F-4528-83AB-B7D3185C7826}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B0449DC-B92F-4528-83AB-B7D3185C7826}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B0449DC-B92F-4528-83AB-B7D3185C7826}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -421,17 +421,18 @@ namespace StateMonad
         // > updateState :: Labeled S
         // > updateState =  Labeled (\n -> ((n+1),n))
 
-        private static SM<S, S> UpdateState<S>(Func<S, S> incrementer)
-        {
-            return new SM<S, S>
-            {
-                s2scp = n => new Tuple<S, S>
-                {
-                    label = incrementer(n),
-                    lcpContents = n
-                }
-            };
-        }
+        // Replaced below with the incrementState function.
+        //private static SM<S, S> UpdateState<S>(Func<S, S> incrementer)
+        //{
+        //    return new SM<S, S>
+        //    {
+        //        s2scp = n => new Tuple<S, S>
+        //        {
+        //            label = incrementer(n),
+        //            lcpContents = n
+        //        }
+        //    };
+        //}
 
         // Here's a helper that composes UpdateState with Leaf and
         // Branch in the original unlabeled tree. This looks very
@@ -464,7 +465,7 @@ namespace StateMonad
         //
         // Notice this is private:
 
-        private static SM<S, Tr<Tuple<S, a>>> MkM<S, a>(Tr<a> t, Func<S, S> incrementer)
+        private static SM<S, Tr<Tuple<S, a>>> MkM<S, a>(Tr<a> t, Func<SM<S, S>> monadicIncrementer)
         {
             if (t is Lf<a>)
             {
@@ -476,8 +477,7 @@ namespace StateMonad
 
                 var lf = (t as Lf<a>);
 
-                return SM<S, S>.@bind(
-                    UpdateState<S>(incrementer),
+                return monadicIncrementer().@bind(
                     n => SM<S, Tr<Tuple<S, a>>>.@return(
                              new Lf<Tuple<S, a>>
                              {
@@ -494,10 +494,8 @@ namespace StateMonad
                 var oldleft = br.left;
                 var oldright = br.right;
 
-                return SM<S, Tr<Tuple<S, a>>>.@bind(
-                    MkM<S, a>(oldleft, incrementer),
-                    newleft => SM<S, Tr<Tuple<S, a>>>.@bind(
-                                   MkM<S, a>(oldright, incrementer),
+                return MkM<S, a>(oldleft, monadicIncrementer).@bind(
+                    newleft => MkM<S, a>(oldright, monadicIncrementer).@bind(
                                    newright => SM<S, Tr<Tuple<S, a>>>.@return(
                                                    new Br<Tuple<S, a>>
                                                    {
@@ -516,11 +514,11 @@ namespace StateMonad
 
         // Same signature as non-monadic "Label" above
 
-        public static Tr<Tuple<S, a>> MLabel<S, a>(Tr<a> t, Func<S, S> incrementer) 
+        public static Tr<Tuple<S, a>> MLabel<S, a>(Tr<a> t, Func<SM<S, S>> monadicIncrementer) 
         {
             // throw away the label, we're done with it.
 
-            return MkM<S, a>(t, incrementer).s2scp(default(S)).lcpContents; 
+            return MkM<S, a>(t, monadicIncrementer).s2scp(default(S)).lcpContents; 
         }
 
         #endregion // "monadically labeled tree"
@@ -590,12 +588,22 @@ namespace StateMonad
 
             Console.WriteLine();
             Console.WriteLine("Non-monadically Labeled Tree:");
-            var t2 = Label<int, string>(t, n => n + 1);
+            Func<int, int> incrementer = n => n + 1;
+            var t2 = Label<int, string>(t, incrementer);
             t2.Show(2);
 
             Console.WriteLine();
             Console.WriteLine("Monadically Labeled Tree:");
-            var t3 = MLabel<int, string>(t, n => n + 1);
+            Func<SM<int, int>> monadicIncrementer =
+                () => new SM<int, int>
+                {
+                    s2scp = n => new Tuple<int, int>
+                    {
+                        label = n + 1,
+                        lcpContents = n
+                    }
+                };
+            var t3 = MLabel<int, string>(t, monadicIncrementer);
             t3.Show(2);
 
             Console.WriteLine();
@@ -642,5 +650,13 @@ namespace StateMonad
         // monad." Identify the @return and @bind operators in this
         // monad, implement them explicitly both as virtual methods
         // and as interface methods.
+    }
+
+    public static class SMExtensions
+    {
+        public static Program.SM<S, b> @bind<S, a, b>(this Program.SM<S, a> inputMonad, Func<a, Program.SM<S, b>> inputMaker)
+        {
+            return Program.SM<S, a>.bind(inputMonad, inputMaker);
+        }
     }
 }
