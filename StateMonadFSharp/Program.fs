@@ -5,15 +5,11 @@ open Exercise1
 let labelTreeWithoutMonad tree label incrementer =
   let rec labelTree tree label incrementer =
     match tree with
-    | Leaf(contents) ->
-        (incrementer label, Leaf((label, contents)))
-    | Branch(left, right) ->
-        let l = labelTree left label incrementer
-        let r = labelTree right (fst l) incrementer
-        (fst r, Branch((snd l), (snd r)))
-  let (newState, labeledTree) =
-    labelTree tree label incrementer
-  labeledTree
+    | Leaf(contents)      -> (incrementer label, Leaf((label, contents)))
+    | Branch(left, right) -> let l = labelTree left label incrementer
+                             let r = labelTree right (fst l) incrementer
+                             (fst r, Branch((snd l), (snd r)))
+  labelTree tree label incrementer |> fst
 
 // Test it out
 let demoTree = Branch(Leaf("A"), Branch(Leaf("B"),Branch(Leaf("C"),Leaf("D"))))
