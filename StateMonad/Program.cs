@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using StateMonad.Exercise1;
 
 // We demonstrate three ways of labeling a binary tree with unique
 // integer node numbers: (1) by hand, (2) non-monadically, but
@@ -49,22 +50,22 @@ namespace StateMonad
         // Haskell:
         //
         // A tree containing data of type "a" is either a Leaf
-        // containing an instance of type a, "Lf a", or a Branch
+        // containing an instance of type a, "Leaf a", or a Branch
         // containing two trees recursively containing data of type a:
         //
-        // > data Tr a = Lf a | Br (Tr a) (Tr a)
+        // > data Tree a = Leaf a | Branch (Tree a) (Tree a)
         // >  deriving Show
 
         #region "generic tree"
 
         public const int indentation = 2; // for pretty-printing.
 
-        public abstract class Tr<a>
+        public abstract class Tr<T>
         {
             public abstract void Show(int level);
         }
 
-        // A Tr<a> is either a Lf<a> or a Br<a>.
+        // A Tree<a> is either a Leaf<a> or a Branch<a>.
 
         public class Lf<a> : Tr<a>
         {
@@ -101,7 +102,7 @@ namespace StateMonad
         // of type S for state and a variable of type a, where S, the
         // type of state, is a just an Int.
         // 
-        // > type Lt a = (Tr (S, a))
+        // > type Lt a = (Tree (S, a))
         // > type S = Int  -- State, or "S", is just an Int
         //
         // The Label is the stateful bit we thread through the
@@ -123,15 +124,15 @@ namespace StateMonad
         // primitive as they are in Haskell.
 
         // The first thing we need is a class or type for
-        // state-content pairs, call it Tuple.  Since the type of the
-        // state is hard-coded as "Int," Tuple<S, a> has only one type
+        // state-content pairs, call it Scp.  Since the type of the
+        // state is hard-coded as "Int," Scp<a> has only one type
         // parameter, the type a of its contents.
 
-        public class Tuple<S, a> // State-Content Pair
+        public class Scp<a> // State-Content Pair
         {
-            public S label { get; set; }
+            public int label { get; set; }
             public a lcpContents { get; set; } // New name; don't confuse
-                                               // with the old "contents"
+            // with the old "contents"
             public override string ToString()
             {
                 return String.Format("Label: {0}, Contents: {1}", label, lcpContents);
@@ -143,18 +144,18 @@ namespace StateMonad
         // derive a generic state monad by abstracting parts of this
         // definition.
         //
-        // Reminder: a labeled tree, Lt<a>, is a tree with an Tuple<S, a>
+        // Reminder: a labeled tree, Lt<a>, is a tree with an Scp<a>
         // as its contents. The following function, Label, takes a 
-        // Tr a and returns a Lt a = Tr (S, a), by calling a helper
+        // Tree a and returns a Lt a = Tree (S, a), by calling a helper
         // function, Lab, keeping only the second element of the
         // tuple that Lab returns:
         //
-        // > label :: Tr a -> Lt a
+        // > label :: Tree a -> Lt a
         // > label tr = snd (lab tr 0)
         // >  where ...
 
         // Here is our C# manual-labeling function, Label, which takes
-        // a Tr<a> as input and returns a Tr<Tuple<S, a>> (for which we
+        // a Tree<a> as input and returns a Tree<Scp<a>> (for which we
         // have a new type in the Haskell version.) All this does is
         // call the helper function with a starting value for the
         // labels, namely 0, and then keep only the labeled-tree part
@@ -164,51 +165,51 @@ namespace StateMonad
         // this value, even though it happens to be the value of the
         // next label that would be applied to a tree node..
 
-        public static Tr<Tuple<S, a>> Label<S, a>(Tr<a> t, Func<S, S> incrementer)
+        public static Tr<Scp<a>> Label<a>(Tr<a> t)
         {
-            var r = Lab<S, a>(t, default(S), incrementer); // helper function
+            var r = Lab<a>(t, 0); // helper function
             return r.lltpTree; // keep only the tree part when done.
         }
 
         // Label's helper function threads the label (i.e., the state)
         // around.  It's easiest to create a new data structure to
         // hold a pair of a current Label and a partially labeled
-        // Tr<Tuple<S, a>> = Lt a because we build up the fully labeled tree
+        // Tree<Scp<a>> = Lt a because we build up the fully labeled tree
         // recursively.
 
         // LLtP<a> = Label-LabeledTree Pair; the return type of the
         // helper function, Lab. 
 
-        private class LLtP<S, a>
+        private class LLtP<a>
         {
-            public S lltpLabel { get; set; } 
-            public Tr<Tuple<S, a>> lltpTree { get; set; } //  "label" in Tuple<T>
+            public int lltpLabel { get; set; }
+            public Tr<Scp<a>> lltpTree { get; set; } //  "label" in Scp<T>
         }
 
         // "Lab" takes an old tree and a state value, and returns a
         // pair of state and new tree, which is, itself, a tree of
         // pairs:
 
-        // >   lab :: Tr a -> S -> (S, Lt a)
-        // >   lab (Lf contents) n = ((n+1), (Lf (n, contents))) -- returned pair
-        // >   lab (Br trs) n0     = let (n1, l') = lab l n0  -- pat match in
+        // >   lab :: Tree a -> S -> (S, Lt a)
+        // >   lab (Leaf contents) n = ((n+1), (Leaf (n, contents))) -- returned pair
+        // >   lab (Branch trs) n0     = let (n1, l') = lab l n0  -- pat match in
         // >                             (n2, r') = lab r n1  -- recurive calls
-        // >                         in  (n2, Br l' r')       -- returned pair
+        // >                         in  (n2, Branch l' r')       -- returned pair
 
         // Direct transcription into C#:
 
-        private static LLtP<S, a> Lab<S, a>(Tr<a> t, S lbl, Func<S, S> incrementer)
+        private static LLtP<a> Lab<a>(Tr<a> t, int lbl)
         {
             if (t is Lf<a>)
             {
                 var lf = (t as Lf<a>);
-                return new LLtP<S, a>
+                return new LLtP<a>
                 {
-                    lltpLabel = incrementer(lbl), // bump the label for recursion
-                    lltpTree = new Lf<Tuple<S, a>>
+                    lltpLabel = lbl + 1, // bump the label for recursion
+                    lltpTree = new Lf<Scp<a>>
                     {
                         contents =
-                        new Tuple<S, a>
+                        new Scp<a>
                         {
                             label = lbl, // label this Leaf node
                             lcpContents = lf.contents // copy the contents
@@ -219,12 +220,12 @@ namespace StateMonad
             else if (t is Br<a>)
             {
                 var br = (t as Br<a>);
-                var l = Lab<S, a>(br.left, lbl, incrementer); // recursive call
-                var r = Lab<S, a>(br.right, l.lltpLabel, incrementer); // threading
-                return new LLtP<S, a>
+                var l = Lab<a>(br.left, lbl); // recursive call
+                var r = Lab<a>(br.right, l.lltpLabel); // threading
+                return new LLtP<a>
                 {
                     lltpLabel = r.lltpLabel,
-                    lltpTree = new Br<Tuple<S, a>>
+                    lltpTree = new Br<Scp<a>>
                     {
                         left = l.lltpTree,
                         right = r.lltpTree
@@ -253,24 +254,24 @@ namespace StateMonad
         // just says "if you give me a function from a state to a
         // state-contents pair, I'll thread the state around for you."
 
-        //public delegate Tuple<S, a> S2Scp<S, a>(S state);  // This is nothing but a Func<S, Tuple<S, a>>
+        public delegate Scp<a> S2Scp<a>(int state);
 
         // Here is a type for functions that takes an input of type a
         // and puts it in an instance of the state monad containing an
         // instance of type b. In other words, it both transforms an a
         // to a b and lifts the b into the state monad.
 
-        //public delegate SM<S, b> Maker<S, a, b>(a input);  // This is nothing but a Func<a, SM<S, b>>
+        public delegate SM<b> Maker<a, b>(a input);
 
         // The following is actually general, aside from the hard-coding
         // of the type of label as int. This is the type of a State Monad
         // with contents of any type A.
 
-        public class SM<S, a>
+        public class SM<a>
         {
             // Here is the meat: the only data member of this monad:
 
-            public Func<S, Tuple<S, a>> s2scp { get; set; }
+            public S2Scp<a> s2scp { get; set; }
 
             // Any monad -- the state monad, the continuation monad,
             // the list monad, the maybe monad, etc. must implement
@@ -334,15 +335,15 @@ namespace StateMonad
             // list of @return. The function is implemented as a C#
             // lambda expression:
 
-            public static SM<S, a> @return(a contents)
+            public static SM<a> @return(a contents)
             {
-                return new SM<S, a>
+                return new SM<a>
                 {
-                    s2scp = st => new Tuple<S, a>
+                    s2scp = (st => new Scp<a>
                     {
                         label = st,
                         lcpContents = contents
-                    }
+                    })
                 };
             }
 
@@ -386,15 +387,15 @@ namespace StateMonad
             // >                 -- st0 to (st->any) implemented through the new
             // >                 -- monad instance returned by fany1.
 
-            public static SM<S, b> @bind<b>(SM<S, a> inputMonad, Func<a, SM<S, b>> inputMaker)
+            public static SM<b> @bind<b>(SM<a> inputMonad, Maker<a, b> inputMaker)
             {
-                return new SM<S, b>
+                return new SM<b>
                 {
                     // The new instance of the state monad is a
                     // function from state to state-contents pair,
                     // here realized as a C# lambda expression:
 
-                    s2scp = st0 =>
+                    s2scp = (st0 =>
                     {
                         // Deconstruct the result of calling the input
                         // monad on the state parameter (done by
@@ -409,7 +410,7 @@ namespace StateMonad
                         // instance on the state from above:
 
                         return inputMaker(contents1).s2scp(state1);
-                    }
+                    })
                 };
             }
         }
@@ -421,34 +422,33 @@ namespace StateMonad
         // > updateState :: Labeled S
         // > updateState =  Labeled (\n -> ((n+1),n))
 
-        // Replaced below with the incrementState function.
-        //private static SM<S, S> UpdateState<S>(Func<S, S> incrementer)
-        //{
-        //    return new SM<S, S>
-        //    {
-        //        s2scp = n => new Tuple<S, S>
-        //        {
-        //            label = incrementer(n),
-        //            lcpContents = n
-        //        }
-        //    };
-        //}
+        private static SM<int> UpdateState()
+        {
+            return new SM<int>
+            {
+                s2scp = (n => new Scp<int>
+                {
+                    label = n + 1,
+                    lcpContents = n
+                })
+            };
+        }
 
         // Here's a helper that composes UpdateState with Leaf and
         // Branch in the original unlabeled tree. This looks very
         // hairy in C#, but in Haskell it's quite short. Here's what
         // we do with leaves:
         //
-        // > mkm :: Tr anytype -> Labeled (Lt anytype)
-        // > mkm (Lf x)
+        // > mkm :: Tree anytype -> Labeled (Lt anytype)
+        // > mkm (Leaf x)
         // >   = do n <- updateState  -- call updateState; "n" is of type "S"
-        // >        return (Lf (n,x)) -- "return" does the heavy lifting
+        // >        return (Leaf (n,x)) -- "return" does the heavy lifting
         // >                          --  of creating the Monad from a value.
         //
         // The "do" notation is just Haskell syntactic sugar for
         // precisely the following call of @bind:
         //
-        // updateState >>= \n -> return (Lf (n, x))
+        // updateState >>= \n -> return (Leaf (n, x))
         //
         // which says "call update state, which returns an instance of
         // the state monad, then @bind it to the variable n in a
@@ -458,35 +458,39 @@ namespace StateMonad
         // The Branch case is a trivial recursion. Notice that
         // updateState only gets called on leaves.
         //
-        // > mkm (Br l r)
+        // > mkm (Branch l r)
         // >   = do l' <- mkm l
         // >        r' <- mkm r
-        // >        return (Br l' r')
+        // >        return (Branch l' r')
         //
         // Notice this is private:
 
-        private static SM<S, Tr<Tuple<S, a>>> MkM<S, a>(Tr<a> t, Func<SM<S, S>> monadicIncrementer)
+        private static SM<Tr<Scp<a>>> MkM<a>(Tr<a> t)
         {
             if (t is Lf<a>)
             {
                 // Call UpdateState to get an instance of
                 // SM<int>. Shove it (@bind it) through a lambda
-                // expression that converts ints to SM<Tr<Tuple<S, a>>
+                // expression that converts ints to SM<Tree<Scp<a>>
                 // using the "closed-over" contents from the input
                 // Leaf node:
 
                 var lf = (t as Lf<a>);
 
-                return monadicIncrementer().@bind(
-                    n => SM<S, Tr<Tuple<S, a>>>.@return(
-                             new Lf<Tuple<S, a>>
-                             {
-                                 contents = new Tuple<S, a>
-                                 {
-                                     label = n,
-                                     lcpContents = lf.contents
-                                 }
-                             }));
+                return SM<int>.@bind
+                (UpdateState(),
+                    (n => SM<Tr<Scp<a>>>.@return
+                        (new Lf<Scp<a>>
+                        {
+                            contents = new Scp<a>
+                            {
+                                label = n,
+                                lcpContents = lf.contents
+                            }
+                        }
+                        )
+                    )
+                );
             }
             else if (t is Br<a>)
             {
@@ -494,14 +498,21 @@ namespace StateMonad
                 var oldleft = br.left;
                 var oldright = br.right;
 
-                return MkM<S, a>(oldleft, monadicIncrementer).@bind(
-                    newleft => MkM<S, a>(oldright, monadicIncrementer).@bind(
-                                   newright => SM<S, Tr<Tuple<S, a>>>.@return(
-                                                   new Br<Tuple<S, a>>
-                                                   {
-                                                       left = newleft,
-                                                       right = newright
-                                                   })));
+                return SM<Tr<Scp<a>>>.@bind
+                (MkM<a>(oldleft),
+                    (newleft => SM<Tr<Scp<a>>>.@bind
+                        (MkM<a>(oldright),
+                            (newright => SM<Tr<Scp<a>>>.@return
+                                (new Br<Scp<a>>
+                                {
+                                    left = newleft,
+                                    right = newright
+                                }
+                                )
+                            )
+                        )
+                    )
+                );
             }
             else
             {
@@ -514,11 +525,11 @@ namespace StateMonad
 
         // Same signature as non-monadic "Label" above
 
-        public static Tr<Tuple<S, a>> MLabel<S, a>(Tr<a> t, Func<SM<S, S>> monadicIncrementer) 
+        public static Tr<Scp<a>> MLabel<a>(Tr<a> t)
         {
             // throw away the label, we're done with it.
 
-            return MkM<S, a>(t, monadicIncrementer).s2scp(default(S)).lcpContents; 
+            return MkM(t).s2scp(0).lcpContents;
         }
 
         #endregion // "monadically labeled tree"
@@ -543,40 +554,40 @@ namespace StateMonad
 
             Console.WriteLine();
             Console.WriteLine("Hand-Labeled Tree:");
-            var t1 = new Br<Tuple<int, string>>
+            var t1 = new Br<Scp<string>>
             {
-                left = new Lf<Tuple<int, string>>
+                left = new Lf<Scp<string>>
                 {
-                    contents = new Tuple<int, string>
+                    contents = new Scp<string>
                     {
                         label = 0,
                         lcpContents = "a"
                     }
                 },
-                right = new Br<Tuple<int, string>>
+                right = new Br<Scp<string>>
                 {
-                    left = new Br<Tuple<int, string>>
+                    left = new Br<Scp<string>>
                     {
-                        left = new Lf<Tuple<int, string>>
+                        left = new Lf<Scp<string>>
                         {
-                            contents = new Tuple<int, string>
+                            contents = new Scp<string>
                             {
                                 label = 1,
                                 lcpContents = "b"
                             }
                         },
-                        right = new Lf<Tuple<int, string>>
+                        right = new Lf<Scp<string>>
                         {
-                            contents = new Tuple<int, string>
+                            contents = new Scp<string>
                             {
                                 label = 2,
                                 lcpContents = "c"
                             }
                         }
                     },
-                    right = new Lf<Tuple<int, string>>
+                    right = new Lf<Scp<string>>
                     {
-                        contents = new Tuple<int, string>
+                        contents = new Scp<string>
                         {
                             label = 3,
                             lcpContents = "d"
@@ -588,75 +599,67 @@ namespace StateMonad
 
             Console.WriteLine();
             Console.WriteLine("Non-monadically Labeled Tree:");
-            Func<int, int> incrementer = n => n + 1;
-            var t2 = Label<int, string>(t, incrementer);
+            var t2 = Label<string>(t);
             t2.Show(2);
 
             Console.WriteLine();
             Console.WriteLine("Monadically Labeled Tree:");
-            Func<SM<int, int>> monadicIncrementer =
-                () => new SM<int, int>
-                {
-                    s2scp = n => new Tuple<int, int>
-                    {
-                        label = n + 1,
-                        lcpContents = n
-                    }
-                };
-            var t3 = MLabel<int, string>(t, monadicIncrementer);
+            var t3 = MLabel<string>(t);
             t3.Show(2);
 
             Console.WriteLine();
-        }
 
-        // Exercise 1: generalize over the type of the state, from int
-        // to <S>, say, so that the SM type can handle any kind of
-        // state object. Start with Tuple<T> --> Tuple<S, T>, from
-        // "label-content pair" to "state-content pair".
+            // Test tree for exercises:
+            var tree = new Branch<string>(
+                           new Leaf<string>("a"),
+                           new Branch<string>(
+                               new Branch<string>(
+                                   new Leaf<string>("b"),
+                                   new Leaf<string>("c")),
+                               new Leaf<string>("d")));
 
-        // Exercise 2: go from labeling a tree to doing a constrained
-        // container computation, as in WPF. Give everything a
-        // bounding box, and size subtrees to fit inside their
-        // parents, recursively.
+            // Exercise 1: generalize over the type of the state, from int
+            // to <S>, say, so that the SM type can handle any kind of
+            // state object. Start with Scp<T> --> Scp<S, T>, from
+            // "label-content pair" to "state-content pair".
+            Exercise1.Exercise1.Run(tree);
 
-        // Exercise 3: promote @return and @bind into an abstract
-        // class "M" and make "SM" a subclass of that.
+            // Exercise 2: go from labeling a tree to doing a constrained
+            // container computation, as in WPF. Give everything a
+            // bounding box, and size subtrees to fit inside their
+            // parents, recursively.
 
-        // Exercise 4 (HARD): go from binary tree to n-ary tree.
+            // Exercise 3: promote @return and @bind into an abstract
+            // class "M" and make "SM" a subclass of that.
 
-        // Exercise 5: Abstract from n-ary tree to IEnumerable; do
-        // everything in LINQ! (Hint: SelectMany).
+            // Exercise 4 (HARD): go from binary tree to n-ary tree.
 
-        // Exercise 6: Go look up monadic parser combinators and
-        // implement an elegant parser library on top of your new
-        // state monad in LINQ.
+            // Exercise 5: Abstract from n-ary tree to IEnumerable; do
+            // everything in LINQ! (Hint: SelectMany).
 
-        // Exercise 7: Verify the Monad laws, either abstractly
-        // (pencil and paper), or mechnically, via a program, for the
-        // state monad.
+            // Exercise 6: Go look up monadic parser combinators and
+            // implement an elegant parser library on top of your new
+            // state monad in LINQ.
 
-        // Exercise 8: Design an interface for the operators @return
-        // and @bind and rewrite the state monad so that it implements
-        // this interface. See if you can enforce the monad laws
-        // (associativity of @bind, left identity of @return, right
-        // identity of @return) in the interface implementation.
+            // Exercise 7: Verify the Monad laws, either abstractly
+            // (pencil and paper), or mechnically, via a program, for the
+            // state monad.
 
-        // Exercise 9: Look up the List Monad and implement it so that
-        // it implements the same interface.
+            // Exercise 8: Design an interface for the operators @return
+            // and @bind and rewrite the state monad so that it implements
+            // this interface. See if you can enforce the monad laws
+            // (associativity of @bind, left identity of @return, right
+            // identity of @return) in the interface implementation.
 
-        // Exercise 10: deconstruct this entire example by using
-        // destructive updates (assignment) in a discipline way that
-        // treats the entire CLR and heap memory as an "ambient
-        // monad." Identify the @return and @bind operators in this
-        // monad, implement them explicitly both as virtual methods
-        // and as interface methods.
-    }
+            // Exercise 9: Look up the List Monad and implement it so that
+            // it implements the same interface.
 
-    public static class SMExtensions
-    {
-        public static Program.SM<S, b> @bind<S, a, b>(this Program.SM<S, a> inputMonad, Func<a, Program.SM<S, b>> inputMaker)
-        {
-            return Program.SM<S, a>.bind(inputMonad, inputMaker);
+            // Exercise 10: deconstruct this entire example by using
+            // destructive updates (assignment) in a discipline way that
+            // treats the entire CLR and heap memory as an "ambient
+            // monad." Identify the @return and @bind operators in this
+            // monad, implement them explicitly both as virtual methods
+            // and as interface methods.
         }
     }
 }

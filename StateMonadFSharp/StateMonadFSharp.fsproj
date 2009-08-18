@@ -38,6 +38,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Base.fs" />
+    <Compile Include="Exercise1.fs" />
+    <Compile Include="Exercise2.fs" />
+    <Compile Include="Exercise3.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\FSharp\1.0\Microsoft.FSharp.Targets" />

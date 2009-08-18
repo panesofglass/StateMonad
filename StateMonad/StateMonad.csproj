@@ -45,8 +45,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Exercise1\Branch.cs" />
+    <Compile Include="Exercise1\Exercise1.cs" />
+    <Compile Include="Exercise1\Extensions.cs" />
+    <Compile Include="Exercise1\Leaf.cs" />
+    <Compile Include="Exercise1\Settings.cs" />
+    <Compile Include="Exercise1\StateMonad.cs" />
+    <Compile Include="Exercise1\Tree.cs" />
+    <Compile Include="Exercise1\Tuple.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Exercise2\" />
+    <Folder Include="Exercise3\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
