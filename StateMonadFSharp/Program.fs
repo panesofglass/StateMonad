@@ -9,7 +9,7 @@ let labelTreeWithoutMonad tree label incrementer =
     | Branch(left, right) -> let l = labelTree left label incrementer
                              let r = labelTree right (fst l) incrementer
                              (fst r, Branch((snd l), (snd r)))
-  labelTree tree label incrementer |> fst
+  labelTree tree label incrementer |> snd
 
 // Test it out
 let demoTree = Branch(Leaf("A"), Branch(Leaf("B"),Branch(Leaf("C"),Leaf("D"))))
