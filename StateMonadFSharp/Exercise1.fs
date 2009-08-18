@@ -2,26 +2,41 @@
 module Exercise1
   open Base
   
+  (* StateMonad *)
   type State<'S, 'a> = State of ('S -> 'S * 'a)
 
-  type StateMonad() =
-    static member Return(a) = State (fun s -> s, a)
-    static member Bind sm f =
-      State (fun s0 -> let (s1, a1) = match sm with | State h -> h s0
-                       let (s2, a2) = match f a1 with | State h1 -> h1 s1
-                       (s2, a2))
+  type StateBuilder() =
+    member m.Bind sm f = State (fun s0 -> let (s1, a1) = match sm with | State g -> g s0
+                                                 let (s2, a2) = match f a1 with | State h -> h s1
+                                                 (s2, a2))
+    member m.Return(a) = State (fun s -> s, a)
 
-  let (>>=) sm f = StateMonad.Bind sm f
-  let Return = StateMonad.Return
+  let state = StateBuilder()
 
-  let labelTreeWithStateMonad tree initialState inputMaker =
+  let GetState = State (fun s -> s, s)
+  let SetState s = State (fun _ -> s, ())
+
+  let Eval sm s =
+    match sm with
+    | State f -> f s |> fst
+
+  let Exec sm s =
+    match sm with
+    | State f -> f s |> snd
+
+  (* Labeller *)
+  let labelTreeWithStateMonad tree initialState incrementer =
     let rec makeMonad t incrementer =
       match t with
-      | Leaf(contents)            -> inputMaker () >>= fun n -> Return (Leaf((n, contents)))
-      | Branch(oldLeft, oldRight) -> makeMonad oldLeft incrementer >>=
-                                       fun newLeft -> makeMonad oldRight incrementer >>=
-                                         fun newRight -> Return (Branch(newLeft, newRight))
+      | Leaf(c)      -> state { let! x = GetState
+                                do! SetState (incrementer s)
+                                return Leaf((s, c)) }
+      | Branch(l, r) -> state { let! l = makeMonad l incrementer
+                                let! r = makeMonad r incrementer
+                                return Branch(l, r) }
+
+    (* This part is still broken. Need to use Exec. *)
     let (newState, labeledTree) =
-      match makeMonad tree inputMaker with
+      match makeMonad tree incrementer with
       | State f -> f initialState
     labeledTree
