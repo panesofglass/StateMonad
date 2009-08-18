@@ -7,8 +7,8 @@ module Exercise1
 
   type StateBuilder() =
     member m.Bind sm f = State (fun s0 -> let (s1, a1) = match sm with | State g -> g s0
-                                                 let (s2, a2) = match f a1 with | State h -> h s1
-                                                 (s2, a2))
+                                          let (s2, a2) = match f a1 with | State h -> h s1
+                                          (s2, a2))
     member m.Return(a) = State (fun s -> s, a)
 
   let state = StateBuilder()
@@ -31,12 +31,9 @@ module Exercise1
       | Leaf(c)      -> state { let! x = GetState
                                 do! SetState (incrementer s)
                                 return Leaf((s, c)) }
+
       | Branch(l, r) -> state { let! l = makeMonad l incrementer
                                 let! r = makeMonad r incrementer
                                 return Branch(l, r) }
 
-    (* This part is still broken. Need to use Exec. *)
-    let (newState, labeledTree) =
-      match makeMonad tree incrementer with
-      | State f -> f initialState
-    labeledTree
+    Exec (makeMonad tree incrementer)
