@@ -1,4 +1,4 @@
-﻿open Base
+open Base
 open Exercise1
 
 // Non-monadic labeller
