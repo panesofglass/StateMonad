@@ -26,14 +26,14 @@ module Exercise1
 
   (* Labeller *)
   let labelTreeWithStateMonad tree initialState incrementer =
-    let rec makeMonad t incrementer =
+    let rec labelTree t incrementer =
       match t with
       | Leaf(c)      -> state { let! x = GetState
                                 do! SetState (incrementer s)
                                 return Leaf((s, c)) }
 
-      | Branch(l, r) -> state { let! l = makeMonad l incrementer
-                                let! r = makeMonad r incrementer
+      | Branch(l, r) -> state { let! l = labelTree l incrementer
+                                let! r = labelTree r incrementer
                                 return Branch(l, r) }
 
-    Exec (makeMonad tree incrementer)
+    Exec (labelTree tree incrementer)
