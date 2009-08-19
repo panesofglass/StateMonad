@@ -20,7 +20,11 @@ let incrementer = fun n -> n + 1
 let labeledTree = labelTreeWithoutMonad demoTree initialState incrementer
 show labeledTree
 
-printfn "Exercise 1: Monadically labeled tree"
-let inputMaker = fun () -> State(fun n -> n + 1, n)
-let mTree = labelTreeWithStateMonad demoTree initialState inputMaker
+printfn "Exercise 1: Monadically labeled tree using static monad implementation"
+let monadicIncrementer = fun () -> State(fun n -> n + 1, n)
+let smTree = labelTreeWithStaticStateMonad demoTree initialState monadicIncrementer
+show smTree
+
+printfn "Exercise 1: Monadically labeled tree using monad builder implementation"
+let mTree = labelTreeWithStateBuilder demoTree initialState incrementer // Note the use of the normal incrementer.
 show mTree
