@@ -1,10 +1,10 @@
 using System;
 
-namespace StateMonad.Exercise1
+namespace StateMonad.Base
 {
     public static class Extensions
     {
-        public static void Show<a>(this a thing, int level)
+        public static void Show<T>(this T thing, int level)
         {
             Console.Write("{0}", thing.ToString());
         }

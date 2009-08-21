@@ -1,4 +1,4 @@
-namespace StateMonad.Exercise1
+namespace StateMonad.Base
 {
     public abstract class Tree<TContents>
     {

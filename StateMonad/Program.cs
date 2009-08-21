@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using StateMonad.Base;
 using StateMonad.Exercise1;
+using StateMonad.Exercise2;
 
 // We demonstrate three ways of labeling a binary tree with unique
 // integer node numbers: (1) by hand, (2) non-monadically, but
@@ -609,7 +611,10 @@ namespace StateMonad
 
             Console.WriteLine();
 
-            // Test tree for exercises:
+            // Exercise 1: generalize over the type of the state, from int
+            // to <S>, say, so that the SM type can handle any kind of
+            // state object. Start with Scp<T> --> Scp<S, T>, from
+            // "label-content pair" to "state-content pair".
             var tree = new Branch<string>(
                            new Leaf<string>("a"),
                            new Branch<string>(
@@ -617,17 +622,25 @@ namespace StateMonad
                                    new Leaf<string>("b"),
                                    new Leaf<string>("c")),
                                new Leaf<string>("d")));
-
-            // Exercise 1: generalize over the type of the state, from int
-            // to <S>, say, so that the SM type can handle any kind of
-            // state object. Start with Scp<T> --> Scp<S, T>, from
-            // "label-content pair" to "state-content pair".
-            Exercise1.Exercise1.Run(tree);
+            Exercise1<int, string>.Run(tree, 0, () => new StateMonad<int, int>(n => Tuple.Create(n + 1, n)));
 
             // Exercise 2: go from labeling a tree to doing a constrained
             // container computation, as in WPF. Give everything a
             // bounding box, and size subtrees to fit inside their
             // parents, recursively.
+
+            // Almost but not quite. :-/
+            Func<StateMonad<Rect, Rect>> leftBounder = () =>
+                new StateMonad<Rect, Rect>(rect =>
+                    Tuple.Create(new Rect(rect.Height, rect.Width / 2, rect.Top, rect.Left + (rect.Width / 2)),
+                                 new Rect(rect.Height, rect.Width / 2, rect.Top, rect.Left)));
+
+            Func<StateMonad<Rect, Rect>> rightBounder = () =>
+                new StateMonad<Rect, Rect>(rect =>
+                    Tuple.Create(new Rect(rect.Height, rect.Width * 2, rect.Top, rect.Left + rect.Width), rect));
+
+            var seed = new Rect(100, 100, 1, 1);
+            Exercise2<Rect, string>.Run(tree, seed, leftBounder, rightBounder);
 
             // Exercise 3: promote @return and @bind into an abstract
             // class "M" and make "SM" a subclass of that.

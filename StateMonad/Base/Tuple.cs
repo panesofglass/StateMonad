@@ -1,6 +1,6 @@
 using System;
 
-namespace StateMonad.Exercise1
+namespace StateMonad.Base
 {
     public class Tuple<TFirst, TSecond>
     {

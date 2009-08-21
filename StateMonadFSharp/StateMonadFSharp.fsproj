@@ -39,7 +39,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Base.fs" />
-    <Compile Include="Exercise1.fs" />
+    <Compile Include="Exercise1_1.fs" />
+    <Compile Include="Exercise1_2.fs" />
     <Compile Include="Exercise2.fs" />
     <Compile Include="Exercise3.fs" />
     <Compile Include="Program.fs" />

@@ -1,6 +1,6 @@
 using System;
 
-namespace StateMonad.Exercise1
+namespace StateMonad.Base
 {
     public class Leaf<TContents> : Tree<TContents>
     {
@@ -15,7 +15,7 @@ namespace StateMonad.Exercise1
         {
             Console.Write(new String(' ', level * Settings.Indentation));
             Console.Write("Leaf: ");
-            global::StateMonad.Exercise1.Extensions.Show(Contents, level);
+            Contents.Show(level);
             Console.WriteLine();
         }
     }
