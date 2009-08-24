@@ -2,12 +2,12 @@
 {
     public class Rect
     {
-        public readonly int Height;
-        public readonly int Width;
-        public readonly int Top;
-        public readonly int Left;
+        public readonly double Height;
+        public readonly double Width;
+        public readonly double Top;
+        public readonly double Left;
 
-        public Rect(int height, int width, int top, int left)
+        public Rect(double height, double width, double top, double left)
         {
             Height = height;
             Width = width;

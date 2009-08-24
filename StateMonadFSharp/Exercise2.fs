@@ -8,22 +8,23 @@
      Besides, if I don't I'm basically just rewriting the C# version! *)  
   
   type Rect =
-    { Height: int;
-      Width: int;
-      Top: int;
-      Left: int }
+    { Height: float;
+      Width: float;
+      Top: float;
+      Left: float }
     with override r.ToString() = String.Format("Height: {0}, Width: {1}, Top: {2}, Left: {3}", r.Height, r.Width, r.Top, r.Left)
   
   (* StateBuilder Bounder *)
-  let boundTree tree seed leftBounder rightBounder =
-    let rec labelTree t bounder =
+  let boundTree tree seed leftUpdater rightUpdater =
+    let rec labelTree t updater =
       match t with
       | Leaf(c)      -> state { let! s = getState
-                                do! setState (bounder s)
-                                return Leaf(s, c) }
+                                let (next, curr) = updater s
+                                do! setState next
+                                return Leaf(curr, c) }
 
-      | Branch(l, r) -> state { let! l = labelTree l leftBounder
-                                let! r = labelTree r rightBounder
+      | Branch(l, r) -> state { let! l = labelTree l leftUpdater
+                                let! r = labelTree r rightUpdater
                                 return Branch(l, r) }
 
-    exec (labelTree tree leftBounder) seed
+    exec (labelTree tree leftUpdater) seed

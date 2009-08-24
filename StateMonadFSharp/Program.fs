@@ -28,31 +28,47 @@ let incrementer = fun n -> n + 1
 let labeledTree = labelTreeWithoutMonad demoTree seed incrementer
 show labeledTree
 
-printfn "Exercise 1: Monadically labeled tree using static monad implementation"
+printfn "\nExercise 1:"
+printfn "Monadically labeled tree using static monad implementation"
 let monadicIncrementer = fun () -> State(fun n -> n + 1, n)
 let smTree = labelTreeWithStaticStateMonad demoTree seed monadicIncrementer
 show smTree
 
-printfn "Exercise 1: Monadically labeled tree using monad builder implementation"
+printfn "Monadically labeled tree using monad builder implementation"
 let sbTree = labelTreeWithStateBuilder demoTree seed incrementer // Note the use of the normal incrementer.
 show sbTree
 
-printfn "Exercise 2: Bound tree with rects"
-let leftBounder = fun rect -> { Height = rect.Height
-                                Width = rect.Width / 2
-                                Top = rect.Top
-                                Left = rect.Left + (rect.Width / 2) }
+printfn "\nExercise 2:"
+let leftBounder =
+  fun (depth, rect) -> let newDepth = depth + 1.0
+                       let multiplier = 2.0 * newDepth
+                       ( (newDepth,
+                          { Height = rect.Height
+                            Width = rect.Width / multiplier
+                            Top = rect.Top
+                            Left = rect.Left + rect.Width / multiplier }),
+                         (newDepth,
+                          { Height = rect.Height
+                            Width = rect.Width / multiplier
+                            Top = rect.Top
+                            Left = rect.Left }) )
 
-let rightBounder = fun rect -> { Height = rect.Height
-                                 Width = rect.Width * 2
-                                 Top = rect.Top
-                                 Left = rect.Left + rect.Width }
-                                 
-let rectSeed =
-  { Height = 100
-    Width = 100
-    Top = 1
-    Left = 1 }
-                                
-let bTree = boundTree demoTree rectSeed leftBounder rightBounder
+let rightBounder =
+  fun (depth, rect) -> let newDepth = depth - 1.0
+                       ( (newDepth,
+                          { Height = rect.Height
+                            Width = rect.Width * 2.0
+                            Top = rect.Top
+                            Left = rect.Left + rect.Width }),
+                         (depth, rect) )
+
+let initialDepth = 0.0
+let initialRect = { Height = 100.0
+                    Width = 100.0
+                    Top = 0.0
+                    Left = 0.0 }              
+let ex2Seed = (initialDepth, initialRect)
+
+printfn "Bound tree to rects"
+let bTree = boundTree demoTree ex2Seed leftBounder rightBounder
 show bTree

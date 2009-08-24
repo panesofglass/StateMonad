@@ -629,18 +629,33 @@ namespace StateMonad
             // bounding box, and size subtrees to fit inside their
             // parents, recursively.
 
-            // Almost but not quite. :-/
-            Func<StateMonad<Rect, Rect>> leftBounder = () =>
-                new StateMonad<Rect, Rect>(rect =>
-                    Tuple.Create(new Rect(rect.Height, rect.Width / 2, rect.Top, rect.Left + (rect.Width / 2)),
-                                 new Rect(rect.Height, rect.Width / 2, rect.Top, rect.Left)));
+            Func<StateMonad<Tuple<double, Rect>, Tuple<double, Rect>>> leftBounder = () =>
+                new StateMonad<Tuple<double, Rect>, Tuple<double, Rect>>(m =>
+                    {
+                        var depth = m.First;
+                        var rect = m.Second;
+                        var newDepth = depth + 1.0;
+                        var multiplier = 2.0 * newDepth;
+                        var nextRect = new Rect(rect.Height, rect.Width / multiplier, rect.Top, rect.Left + rect.Width / multiplier);
+                        var currRect = new Rect(rect.Height, rect.Width / multiplier, rect.Top, rect.Left);
+                        return Tuple.Create(Tuple.Create(newDepth, nextRect), Tuple.Create(newDepth, currRect));
+                    });
 
-            Func<StateMonad<Rect, Rect>> rightBounder = () =>
-                new StateMonad<Rect, Rect>(rect =>
-                    Tuple.Create(new Rect(rect.Height, rect.Width * 2, rect.Top, rect.Left + rect.Width), rect));
+            Func<StateMonad<Tuple<double, Rect>, Tuple<double, Rect>>> rightBounder = () =>
+                new StateMonad<Tuple<double, Rect>, Tuple<double, Rect>>(m =>
+                    {
+                        var depth = m.First;
+                        var rect = m.Second;
+                        var newDepth = depth - 1.0;
+                        var nextRect = new Rect(rect.Height, rect.Width * 2, rect.Top, rect.Left + rect.Width);
+                        return Tuple.Create(Tuple.Create(newDepth, nextRect), m);
+                    });
+            
+            var initialDepth = 0.0;
+            var initialRect = new Rect(100, 100, 0, 0);
+            var ex2Seed = Tuple.Create(initialDepth, initialRect);
 
-            var seed = new Rect(100, 100, 1, 1);
-            Exercise2<Rect, string>.Run(tree, seed, leftBounder, rightBounder);
+            Exercise2<Tuple<double, Rect>, string>.Run(tree, ex2Seed, leftBounder, rightBounder);
 
             // Exercise 3: promote @return and @bind into an abstract
             // class "M" and make "SM" a subclass of that.
