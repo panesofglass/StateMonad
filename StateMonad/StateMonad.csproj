@@ -50,16 +50,20 @@
     <Compile Include="Base\Extensions.cs" />
     <Compile Include="Base\Leaf.cs" />
     <Compile Include="Base\Settings.cs" />
+    <Compile Include="Exercise1\Runner.cs" />
     <Compile Include="Exercise1\StateMonad.cs" />
     <Compile Include="Base\Tree.cs" />
     <Compile Include="Base\Tuple.cs" />
     <Compile Include="Exercise2\Exercise2.cs" />
     <Compile Include="Exercise2\Rect.cs" />
+    <Compile Include="Exercise2\Runner.cs" />
+    <Compile Include="Exercise3\Exercise3.cs" />
+    <Compile Include="Exercise3\M.cs" />
+    <Compile Include="Exercise3\Runner.cs" />
+    <Compile Include="Exercise3\SM.cs" />
+    <Compile Include="Exercise4\Exercise4.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Exercise3\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

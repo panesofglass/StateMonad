@@ -628,37 +628,15 @@ namespace StateMonad
             // container computation, as in WPF. Give everything a
             // bounding box, and size subtrees to fit inside their
             // parents, recursively.
-
-            Func<StateMonad<Tuple<double, Rect>, Tuple<double, Rect>>> leftBounder = () =>
-                new StateMonad<Tuple<double, Rect>, Tuple<double, Rect>>(m =>
-                    {
-                        var depth = m.First;
-                        var rect = m.Second;
-                        var newDepth = depth + 1.0;
-                        var multiplier = 2.0 * newDepth;
-                        var nextRect = new Rect(rect.Height, rect.Width / multiplier, rect.Top, rect.Left + rect.Width / multiplier);
-                        var currRect = new Rect(rect.Height, rect.Width / multiplier, rect.Top, rect.Left);
-                        return Tuple.Create(Tuple.Create(newDepth, nextRect), Tuple.Create(newDepth, currRect));
-                    });
-
-            Func<StateMonad<Tuple<double, Rect>, Tuple<double, Rect>>> rightBounder = () =>
-                new StateMonad<Tuple<double, Rect>, Tuple<double, Rect>>(m =>
-                    {
-                        var depth = m.First;
-                        var rect = m.Second;
-                        var newDepth = depth - 1.0;
-                        var nextRect = new Rect(rect.Height, rect.Width * 2, rect.Top, rect.Left + rect.Width);
-                        return Tuple.Create(Tuple.Create(newDepth, nextRect), m);
-                    });
-            
             var initialDepth = 0.0;
             var initialRect = new Rect(100, 100, 0, 0);
             var ex2Seed = Tuple.Create(initialDepth, initialRect);
-
-            Exercise2<Tuple<double, Rect>, string>.Run(tree, ex2Seed, leftBounder, rightBounder);
+            Exercise2.Exercise2.Run(tree, ex2Seed);
 
             // Exercise 3: promote @return and @bind into an abstract
             // class "M" and make "SM" a subclass of that.
+            // Running exercise 3 with all the pieces from exercise 2:
+            Exercise3.Exercise3.Run(tree, ex2Seed);
 
             // Exercise 4 (HARD): go from binary tree to n-ary tree.
 
