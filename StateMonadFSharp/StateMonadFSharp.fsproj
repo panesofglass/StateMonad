@@ -43,8 +43,9 @@
     <Compile Include="Exercise1_2.fs" />
     <Compile Include="Exercise2.fs" />
     <Compile Include="Exercise3.fs" />
-    <Compile Include="Program.fs" />
     <Compile Include="Exercise4.fs" />
+    <Compile Include="Exercise5.fs" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\FSharp\1.0\Microsoft.FSharp.Targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using StateMonad.Base;
-using StateMonad.Exercise1;
 using StateMonad.Exercise2;
 
 // We demonstrate three ways of labeling a binary tree with unique
@@ -622,7 +621,7 @@ namespace StateMonad
                                    new Leaf<string>("b"),
                                    new Leaf<string>("c")),
                                new Leaf<string>("d")));
-            Exercise1<int, string>.Run(tree, 0, () => new StateMonad<int, int>(n => Tuple.Create(n + 1, n)));
+            Exercise1.Exercise1.Run(tree, 0);
 
             // Exercise 2: go from labeling a tree to doing a constrained
             // container computation, as in WPF. Give everything a
@@ -642,6 +641,7 @@ namespace StateMonad
 
             // Exercise 5: Abstract from n-ary tree to IEnumerable; do
             // everything in LINQ! (Hint: SelectMany).
+            Exercise5.Exercise5.Run(tree, ex2Seed);
 
             // Exercise 6: Go look up monadic parser combinators and
             // implement an elegant parser library on top of your new

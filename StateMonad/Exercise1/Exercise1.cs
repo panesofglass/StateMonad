@@ -3,11 +3,13 @@ using StateMonad.Base;
 
 namespace StateMonad.Exercise1
 {
-    public static class Exercise1<TState, TContents>
+    public static class Exercise1
     {
-        public static void Run(Tree<TContents> tree, TState seed, Func<StateMonad<TState, TState>> incrementer)
+        public static void Run(Tree<string> tree, int seed)
         {
-            var runner = new Runner<TState, TContents>(incrementer);
+            Func<StateMonad<int, int>> incrementer = () => new StateMonad<int, int>(n => Tuple.Create(n + 1, n));
+
+            var runner = new Runner<int, string>(incrementer);
 
             Console.WriteLine();
             Console.WriteLine("Exercise 1: Monadically Labeled Tree:");
